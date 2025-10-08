@@ -75,74 +75,246 @@
       </p>
       <img src="images/A.2.1.jpg" alt="Source Image 1">
       <img src="images/A.2.2.jpg" alt="Source Image 2">
-      <p class="caption">Example pair of images with projective transformation.</p>
+      <img src="images/test4.1.jpg" alt="Source Image 3">
+      <img src="images/test4.2.jpg" alt="Source Image 4">
+      <p class="caption">Example pairs of images with projective transformation.</p>
     </section>
 
     <section id="A2">
-      <h2>A.2 Recover Homographies</h2>
-      <p>
-        To compute the homography <code>H</code> between two views, I implemented the Direct Linear Transformation (DLT) algorithm. 
-        The system <code>Ah = b</code> was solved using least-squares with more than four correspondences for robustness.
-      </p>
-      <img src="images/correspondences.png" alt="Point correspondences visualization">
-      <p class="caption">Visualized correspondences between two images.</p>
+  <h2>A.2 Recover Homographies</h2>
 
-      <p>
-        Example of recovered homography matrix:
-      </p>
-      <pre>
+  <p>
+    To align two images under a projective transformation, we must estimate the
+    <strong>homography matrix</strong> <code>H</code> such that <code>p' = H·p</code>.
+    The transformation is computed from pairs of corresponding points 
+    <code>(x, y) → (x', y')</code> between the two images.
+  </p>
+
+  <h3>Point Correspondences</h3>
+  <p>
+    I manually selected more than four point correspondences using 
+    the website tool given. The correspondences are visualized below.
+  </p>
+
+  <img src="images/correspondences.png" alt="Point correspondences visualization">
+  <p class="caption">Corresponding points visualized between the two images.</p>
+
+  <h3>System of Equations</h3>
+  <p>
+    For each correspondence, two linear equations are generated to form the system 
+    <code>Ah = b</code>, where <code>h</code> contains the 8 unknown homography parameters.
+  </p>
+  <pre>
+For each (x, y) → (x', y'):
+  [-x, -y, -1,  0,  0,  0, x*x', y*y'] * h = -x'
+  [ 0,  0,  0, -x, -y, -1, x*y', y*y'] * h = -y'
+  </pre>
+
+  <h3>Implementation</h3>
+  <p>
+    Below is my implementation of <code>computeH()</code> using the Direct Linear Transformation (DLT) method and least-squares fitting:
+  </p>
+
+  <pre><code class="language-python">
+def computeH(im1_pts, im2_pts):
+    n = im1_pts.shape[0]
+    A = []
+    b = []
+
+    for i in range(n):
+        x, y = im1_pts[i]
+        x_p, y_p = im2_pts[i]
+
+        # Each correspondence provides two equations
+        A.append([x, y, 1, 0, 0, 0, -x*x_p, -y*x_p])
+        A.append([0, 0, 0, x, y, 1, -x*y_p, -y*y_p])
+        b.append(x_p)
+        b.append(y_p)
+
+    A = np.array(A)
+    b = np.array(b)
+
+    # Solve using least squares (Ah = b)
+    h, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
+
+    # Rebuild into 3×3 matrix with bottom-right set to 1
+    H = np.append(h, 1).reshape(3, 3)
+    return H
+  </code></pre>
+
+  <h3>Recovered Homography Matrix</h3>
+  <pre>
 H =
 | 1.002  -0.013   120.43 |
 | 0.025   0.995   -20.17 |
 | 0.0002  0.0001   1.000 |
-      </pre>
-    </section>
+  </pre>
+  <p class="caption">Computed homography mapping Image 2 → Image 1.</p>
 
-    <section id="A3">
-      <h2>A.3 Warp the Images</h2>
-      <p>
-        I implemented inverse warping with two interpolation methods:
-        <ul>
-          <li><strong>Nearest Neighbor:</strong> Fast but blocky results.</li>
-          <li><strong>Bilinear:</strong> Smoother and visually pleasing, but slower.</li>
-        </ul>
-      </p>
-      <img src="images/warp_nn.png" alt="Warped image using Nearest Neighbor">
-      <p class="caption">Warped image (Nearest Neighbor interpolation and Bilinear interpolation)</p>
+  <p>
+    The resulting homography accurately aligns planar regions between the two images,
+    enabling seamless warping and blending in later stages.
+  </p>
+</section>
 
-      <img src="images/warp.png" alt="Warped image using Bilinear interpolation">
-      <p class="caption">Warped image</p>
 
-      <h3>Rectification Example</h3>
-      <p>
-        Below is a rectified image where a tilted poster was transformed to appear fronto-parallel.
-      </p>
-      <img src="images/rectified.png" alt="Rectified result">
-      <p class="caption">Rectification using manually selected correspondences.</p>
-    </section>
+<section id="A3">
+  <h2>A.3 Warp the Images</h2>
+  <p>
+    I implemented inverse warping with two interpolation methods:
+  </p>
+  <ul>
+    <li><strong>Nearest Neighbor:</strong> Fast but blocky results.</li>
+    <li><strong>Bilinear:</strong> Smoother and visually pleasing, but slower.</li>
+  </ul>
 
-    <section id="A4">
-      <h2>A.4 Blend Images into a Mosaic</h2>
-      <p>
-        I warped each image into the reference frame and blended them using alpha-weighted averaging. 
-        To avoid hard seams, I used a linear falloff mask that smoothly transitions near overlapping regions.
-      </p>
+  <h3>Python Implementation</h3>
+  <pre>
+<code>
+def get_warp_bounds(img, H):
+    h, w = img.shape[:2]
+    corners = np.array([
+        [0, 0, 1],
+        [w, 0, 1],
+        [0, h, 1],
+        [w, h, 1]
+    ]).T
+    warped = H @ corners
+    warped /= warped[2, :]
+    min_x, max_x = warped[0].min(), warped[0].max()
+    min_y, max_y = warped[1].min(), warped[1].max()
+    return int(min_x), int(max_x), int(min_y), int(max_y)
 
-      <img src="images/mosaic_result.jpg" alt="Mosaic 1 result">
-      <p class="caption">Mosaic Example 1</p>
+def warpImageNearestNeighbor(im, H):
+    H_inv = np.linalg.inv(H)
+    min_x, max_x, min_y, max_y = get_warp_bounds(im, H)
+    out_w, out_h = max_x - min_x, max_y - min_y
+    warped = np.zeros((out_h, out_w, im.shape[2]))
 
-      <img src="images//mosaic_result1.jpg" alt="Mosaic 2 result">
-      <p class="caption">Mosaic Example 2</p>
+    for y_out in range(out_h):
+        for x_out in range(out_w):
+            xw, yw, _ = H_inv @ np.array([x_out + min_x, y_out + min_y, 1])
+            xw, yw = xw / _, yw / _
 
-      <img src="images//mosaic_result3.jpg" alt="Mosaic 3 result">
-      <p class="caption">Mosaic Example 3</p>
-      
-      <img src="images//mosaic_result4.jpg" alt="Mosaic 3 result">
-      <p class="caption">Mosaic Example 3</p>
-      <p>
-        Weighted blending effectively reduces visible seams but may introduce slight ghosting if misalignment exists.
-      </p>
-    </section>
+            xw_r, yw_r = int(round(xw)), int(round(yw))
+            if 0 <= xw_r < im.shape[1] and 0 <= yw_r < im.shape[0]:
+                warped[y_out, x_out] = im[yw_r, xw_r]
+    return warped
+
+def warpImageBilinear(im, H):
+    H_inv = np.linalg.inv(H)
+    min_x, max_x, min_y, max_y = get_warp_bounds(im, H)
+    out_w, out_h = max_x - min_x, max_y - min_y
+    warped = np.zeros((out_h, out_w, im.shape[2]))
+
+    for y_out in range(out_h):
+        for x_out in range(out_w):
+            xw, yw, _ = H_inv @ np.array([x_out + min_x, y_out + min_y, 1])
+            xw, yw = xw / _, yw / _
+
+            x0, y0 = int(np.floor(xw)), int(np.floor(yw))
+            dx, dy = xw - x0, yw - y0
+
+            if 0 <= x0 < im.shape[1]-1 and 0 <= y0 < im.shape[0]-1:
+                warped[y_out, x_out] = (
+                    (1-dx)*(1-dy)*im[y0, x0] +
+                    dx*(1-dy)*im[y0, x0+1] +
+                    (1-dx)*dy*im[y0+1, x0] +
+                    dx*dy*im[y0+1, x0+1]
+                )
+    return warped
+</code>
+  </pre>
+
+  <h3>Warped Images</h3>
+  <img src="images/warp_nn.png" alt="Warped image using Nearest Neighbor">
+  <p class="caption">Warped image using Nearest Neighbor interpolation.</p>
+
+  <img src="images/warp.png" alt="Warped image comparison">
+  <p class="caption">Warped image comparison.</p>
+
+  <h3>Rectification Example</h3>
+  <p>
+    Below are 2 rectified images where a tilted view was transformed to appear fronto-parallel.
+  </p>
+  <img src="images/rectified.png" alt="Rectified result">
+  <img src="images/rectified1.png" alt="Rectified result">
+  <p class="caption">Rectification using manually selected correspondences.</p>
+</section>
+
+
+<section id="A4">
+  <h2>A.4 Blend the Images into a Mosaic</h2>
+  <p>
+    I warped the second image into the coordinate frame of the first (reference) image using the computed homography. 
+    Each mosaic was created from a pair of input images, aligned within a shared mosaic canvas determined by their transformed corners.
+  </p>
+
+  <p>
+    To blend overlapping regions, I used <strong>alpha-weighted averaging with a linear falloff mask</strong> near the image boundaries. 
+    This smooth transition reduces visible seams and creates a more natural mosaic. 
+    Since each mosaic consists of two images, simple weighted blending was sufficient and no multi-band blending was required.
+  </p>
+
+  <p>
+    To reduce edge artifacts where two warped images overlap, I generated an <em>alpha mask</em> for each image. 
+    Pixel weights were higher at the image center and gradually decreased toward the edges, forming a smooth falloff. 
+    This ensures that in overlapping areas, both images contribute proportionally instead of one abruptly overwriting the other.
+    The blended pixel value at each position <code>(x, y)</code> was computed as:
+  </p>
+
+  <pre><code>
+mosaic(x, y) = (α₁ * I₁(x, y) + α₂ * I₂(x, y)) / (α₁ + α₂)
+  </code></pre>
+
+  <p>
+    This weighted averaging allows for smooth transitions between images, significantly reducing sharp seams or exposure jumps 
+    along image boundaries. Although minor ghosting may occur when alignment is imperfect, the overall result appears visually 
+    coherent and continuous.
+  </p>
+
+  <!-- ========== Mosaic 1 ========== -->
+  <h3>Mosaic Example 1</h3>
+  <div class="image-pair">
+    <img src="images/A.2.1.jpg" alt="Input image 1 for mosaic 1">
+    <img src="images/A.2.2.jpg" alt="Input image 2 for mosaic 1">
+  </div>
+  <img src="images/mosaic_result.jpg" alt="Mosaic 1 result">
+  <p class="caption">Resulting mosaic from image pair 1.</p>
+
+  <!-- ========== Mosaic 2 ========== -->
+  <h3>Mosaic Example 2</h3>
+  <div class="image-pair">
+    <img src="images/test2.1.jpg" alt="Input image 1 for mosaic 2">
+    <img src="images/test2.2.jpg" alt="Input image 2 for mosaic 2">
+  </div>
+  <img src="images/mosaic_result1.jpg" alt="Mosaic 2 result">
+  <p class="caption">Resulting mosaic from image pair 2.</p>
+
+  <!-- ========== Mosaic 3 ========== -->
+  <h3>Mosaic Example 3</h3>
+  <div class="image-pair">
+    <img src="images/test3.1.jpg" alt="Input image 1 for mosaic 3">
+    <img src="images/test3.2.jpg" alt="Input image 2 for mosaic 3">
+  </div>
+  <img src="images/mosaic_result3.jpg" alt="Mosaic 3 result">
+  <p class="caption">Resulting mosaic from image pair 3.</p>
+
+  <!-- ========== Mosaic 4 ========== -->
+  <h3>Mosaic Example 4</h3>
+  <div class="image-pair">
+    <img src="images/test4.1.jpg" alt="Input image 1 for mosaic 4">
+    <img src="images/test4.2.jpg" alt="Input image 2 for mosaic 4">
+  </div>
+  <img src="images/mosaic_result4.jpg" alt="Mosaic 4 result">
+  <p class="caption">Resulting mosaic from image pair 4.</p>
+
+  <p>
+    Weighted blending effectively reduced hard edges and improved the visual continuity of each mosaic. 
+    Minor ghosting may appear if alignment is slightly off, but overall the results demonstrate successful image registration and blending.
+  </p>
+</section>
+
 
   </main>
 
