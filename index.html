@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS180 Project 4: Image Mosaicing</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background: #fafafa;
+      color: #222;
+    }
+    header {
+      background: #004080;
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    section {
+      margin-bottom: 3rem;
+    }
+    h2 {
+      border-bottom: 2px solid #004080;
+      padding-bottom: 0.5rem;
+      color: #004080;
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      margin: 1rem auto;
+      border-radius: 8px;
+    }
+    .caption {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #f0f0f0;
+      color: #666;
+    }
+    code {
+      background: #f5f5f5;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Image Mosaicing</h1>
+    <p>Project 4 — Homography, Warping, and Blending</p>
+  </header>
+
+  <main>
+    <section id="A1">
+      <h2>A.1 Shoot and Digitize Pictures</h2>
+      <p>
+        I captured two sets of photographs by rotating my camera around a fixed center of projection. 
+        Each pair of images has a 40–60% overlap for reliable feature matching.
+      </p>
+      <img src="images/A.2.1.jpg" alt="Source Image 1">
+      <img src="images/A.2.2.jpg" alt="Source Image 2">
+      <p class="caption">Example pair of images with projective transformation.</p>
+    </section>
+
+    <section id="A2">
+      <h2>A.2 Recover Homographies</h2>
+      <p>
+        To compute the homography <code>H</code> between two views, I implemented the Direct Linear Transformation (DLT) algorithm. 
+        The system <code>Ah = b</code> was solved using least-squares with more than four correspondences for robustness.
+      </p>
+      <img src="images/correspondences.png" alt="Point correspondences visualization">
+      <p class="caption">Visualized correspondences between two images.</p>
+
+      <p>
+        Example of recovered homography matrix:
+      </p>
+      <pre>
+H =
+| 1.002  -0.013   120.43 |
+| 0.025   0.995   -20.17 |
+| 0.0002  0.0001   1.000 |
+      </pre>
+    </section>
+
+    <section id="A3">
+      <h2>A.3 Warp the Images</h2>
+      <p>
+        I implemented inverse warping with two interpolation methods:
+        <ul>
+          <li><strong>Nearest Neighbor:</strong> Fast but blocky results.</li>
+          <li><strong>Bilinear:</strong> Smoother and visually pleasing, but slower.</li>
+        </ul>
+      </p>
+      <img src="images/warp_nn.png" alt="Warped image using Nearest Neighbor">
+      <p class="caption">Warped image (Nearest Neighbor interpolation and Bilinear interpolation)</p>
+
+      <img src="images/warp.png" alt="Warped image using Bilinear interpolation">
+      <p class="caption">Warped image</p>
+
+      <h3>Rectification Example</h3>
+      <p>
+        Below is a rectified image where a tilted poster was transformed to appear fronto-parallel.
+      </p>
+      <img src="images/rectified.png" alt="Rectified result">
+      <p class="caption">Rectification using manually selected correspondences.</p>
+    </section>
+
+    <section id="A4">
+      <h2>A.4 Blend Images into a Mosaic</h2>
+      <p>
+        I warped each image into the reference frame and blended them using alpha-weighted averaging. 
+        To avoid hard seams, I used a linear falloff mask that smoothly transitions near overlapping regions.
+      </p>
+
+      <img src="images/mosaic_result.jpg" alt="Mosaic 1 result">
+      <p class="caption">Mosaic Example 1</p>
+
+      <img src="images//mosaic_result1.jpg" alt="Mosaic 2 result">
+      <p class="caption">Mosaic Example 2</p>
+
+      <img src="images//mosaic_result3.jpg" alt="Mosaic 3 result">
+      <p class="caption">Mosaic Example 3</p>
+      
+      <img src="images//mosaic_result4.jpg" alt="Mosaic 3 result">
+      <p class="caption">Mosaic Example 3</p>
+      <p>
+        Weighted blending effectively reduces visible seams but may introduce slight ghosting if misalignment exists.
+      </p>
+    </section>
+
+  </main>
+
+</body>
+</html>
