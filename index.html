@@ -58,6 +58,19 @@
       border-radius: 3px;
       font-size: 0.95em;
     }
+    .mosaic-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* 图片间距，可调 */
+    margin-bottom: 10px;
+  }
+  
+  .mosaic-row img {
+    width: 30%; /* 每张图宽度，可根据实际调整 */
+    height: auto;
+    border: 1px solid #ccc;
+  }
   </style>
 </head>
 <body>
@@ -224,46 +237,42 @@ mosaic(x, y) = (α₁ * I₁(x, y) + α₂ * I₂(x, y)) / (α₁ + α₂)
     coherent and continuous.
   </p>
 
-  <!-- ========== Mosaic 1 ========== -->
-  <h3>Mosaic Example 1</h3>
-  <div class="image-pair">
-    <img src="images/A.2.1.jpg" alt="Input image 1 for mosaic 1">
-    <img src="images/A.2.2.jpg" alt="Input image 2 for mosaic 1">
-  </div>
-  <img src="images/mosaic_result.jpg" alt="Mosaic 1 result">
-  <p class="caption">Resulting mosaic from image pair 1.</p>
+<!-- ========== Mosaic 1 ========== -->
+<h3>Mosaic Example 1</h3>
+<div class="mosaic-row">
+  < img src="images/A.2.1.jpg" alt="Input image 1 for mosaic 1">
+  < img src="images/A.2.2.jpg" alt="Input image 2 for mosaic 1">
+  < img src="images/mosaic_result.jpg" alt="Mosaic 1 result">
+</div>
+<p class="caption">Resulting mosaic from image pair 1.</p >
 
-  <!-- ========== Mosaic 2 ========== -->
-  <h3>Mosaic Example 2</h3>
-  <div class="image-pair">
-    <img src="images/test2.1.jpg" alt="Input image 1 for mosaic 2">
-    <img src="images/test2.2.jpg" alt="Input image 2 for mosaic 2">
-  </div>
-  <img src="images/mosaic_result1.jpg" alt="Mosaic 2 result">
-  <p class="caption">Resulting mosaic from image pair 2.</p>
+<!-- ========== Mosaic 2 ========== -->
+<h3>Mosaic Example 2</h3>
+<div class="mosaic-row">
+  < img src="images/test2.1.jpg" alt="Input image 1 for mosaic 2">
+  < img src="images/test2.2.jpg" alt="Input image 2 for mosaic 2">
+  < img src="images/mosaic_result1.jpg" alt="Mosaic 2 result">
+</div>
+<p class="caption">Resulting mosaic from image pair 2.</p >
 
-  <!-- ========== Mosaic 3 ========== -->
-  <h3>Mosaic Example 3</h3>
-  <div class="image-pair">
-    <img src="images/test3.1.jpg" alt="Input image 1 for mosaic 3">
-    <img src="images/test3.2.jpg" alt="Input image 2 for mosaic 3">
-  </div>
-  <img src="images/mosaic_result3.jpg" alt="Mosaic 3 result">
-  <p class="caption">Resulting mosaic from image pair 3.</p>
+<!-- ========== Mosaic 3 ========== -->
+<h3>Mosaic Example 3</h3>
+<div class="mosaic-row">
+  < img src="images/test3.1.jpg" alt="Input image 1 for mosaic 3">
+  < img src="images/test3.2.jpg" alt="Input image 2 for mosaic 3">
+  < img src="images/mosaic_result3.jpg" alt="Mosaic 3 result">
+</div>
+<p class="caption">Resulting mosaic from image pair 3.</p >
 
-  <!-- ========== Mosaic 4 ========== -->
-  <h3>Mosaic Example 4</h3>
-  <div class="image-pair">
-    <img src="images/test4.1.jpg" alt="Input image 1 for mosaic 4">
-    <img src="images/test4.2.jpg" alt="Input image 2 for mosaic 4">
-  </div>
-  <img src="images/mosaic_result4.jpg" alt="Mosaic 4 result">
-  <p class="caption">Resulting mosaic from image pair 4.</p>
+<!-- ========== Mosaic 4 ========== -->
+<h3>Mosaic Example 4</h3>
+<div class="mosaic-row">
+  < img src="images/test4.1.jpg" alt="Input image 1 for mosaic 4">
+  < img src="images/test4.2.jpg" alt="Input image 2 for mosaic 4">
+  < img src="images/mosaic_result4.jpg" alt="Mosaic 4 result">
+</div>
+<p class="caption">Resulting mosaic from image pair 4.</p >
 
-  <p>
-    Weighted blending effectively reduced hard edges and improved the visual continuity of each mosaic. 
-    Minor ghosting may appear if alignment is slightly off, but overall the results demonstrate successful image registration and blending.
-  </p>
 </section>
 
 
