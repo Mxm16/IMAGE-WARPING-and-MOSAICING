@@ -123,12 +123,26 @@ For each (x, y) → (x', y'):
   [ 0,  0,  0, -x, -y, -1, x*y', y*y'] * h = -y'
   </pre>
 
-  <h3>Implementation</h3>
   <p>
-    Below is my implementation of <code>computeH()</code> using the Direct Linear Transformation (DLT) method and least-squares fitting:
-  </p>
+    This gives us a system <code>A·h = b</code> with 2n equations for n correspondences.
+    When n &gt; 4, the system is overdetermined and solved using least squares:
+  </p >
 
+  <pre>h = (AᵀA)⁻¹Aᵀb</pre>
 
+  <p>
+    The recovered homography matrix <code>H</code> is reshaped as:
+  </p >
+
+  <pre>
+H = [[h11 h12 h13]
+     [h21 h22 h23]
+     [h31 h32   1]]
+  </pre>
+
+  <p>
+    The final computed homography for my image pair is:
+  </p >
   <h3>Recovered Homography Matrix</h3>
   <pre>
 H =
