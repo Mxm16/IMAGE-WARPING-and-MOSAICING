@@ -115,31 +115,6 @@ For each (x, y) → (x', y'):
     Below is my implementation of <code>computeH()</code> using the Direct Linear Transformation (DLT) method and least-squares fitting:
   </p>
 
-  <pre><code class="language-python">
-def computeH(im1_pts, im2_pts):
-    n = im1_pts.shape[0]
-    A = []
-    b = []
-
-    for i in range(n):
-        x, y = im1_pts[i]
-        x_p, y_p = im2_pts[i]
-
-        # Each correspondence provides two equations
-        A.append([x, y, 1, 0, 0, 0, -x*x_p, -y*x_p])
-        A.append([0, 0, 0, x, y, 1, -x*y_p, -y*y_p])
-        b.append(x_p)
-        b.append(y_p)
-
-    A = np.array(A)
-    b = np.array(b)
-
-    # Solve using least squares (Ah = b)
-    h, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
-
-    H = np.append(h, 1).reshape(3, 3)
-    return H
-  </code></pre>
 
   <h3>Recovered Homography Matrix</h3>
   <pre>
@@ -169,48 +144,37 @@ H =
   </ul>
 
   <h3>Python Implementation</h3>
-  <pre>
-<code>
-def warpImageNearestNeighbor(im, H):
-    H_inv = np.linalg.inv(H)
-    min_x, max_x, min_y, max_y = get_warp_bounds(im, H)
-    out_w, out_h = max_x - min_x, max_y - min_y
-    warped = np.zeros((out_h, out_w, im.shape[2]))
+<pre>
+Algorithm: Warp Image Using Homography H
 
-    for y_out in range(out_h):
-        for x_out in range(out_w):
-            xw, yw, _ = H_inv @ np.array([x_out + min_x, y_out + min_y, 1])
-            xw, yw = xw / _, yw / _
+Input:
+  - Image im
+  - Homography matrix H
 
-            xw_r, yw_r = int(round(xw)), int(round(yw))
-            if 0 <= xw_r < im.shape[1] and 0 <= yw_r < im.shape[0]:
-                warped[y_out, x_out] = im[yw_r, xw_r]
-    return warped
+Steps:
+  1. Compute inverse homography H⁻¹.
+  2. Determine output bounds (min_x, max_x, min_y, max_y).
+  3. For each pixel (x_out, y_out) in output image:
+       a. Map back to input coordinates (x_w, y_w, 1) = H⁻¹ · (x_out, y_out, 1).
+       b. Normalize: x_w = x_w / w,  y_w = y_w / w.
 
-def warpImageBilinear(im, H):
-    H_inv = np.linalg.inv(H)
-    min_x, max_x, min_y, max_y = get_warp_bounds(im, H)
-    out_w, out_h = max_x - min_x, max_y - min_y
-    warped = np.zeros((out_h, out_w, im.shape[2]))
+     ▸ Nearest Neighbor:
+         - Round (x_w, y_w) to nearest integer.
+         - Assign pixel value from nearest location.
 
-    for y_out in range(out_h):
-        for x_out in range(out_w):
-            xw, yw, _ = H_inv @ np.array([x_out + min_x, y_out + min_y, 1])
-            xw, yw = xw / _, yw / _
+     ▸ Bilinear Interpolation:
+         - Find floor(x_w), floor(y_w) → (x₀, y₀).
+         - Compute fractional parts dx, dy.
+         - Interpolate using 4 neighboring pixels:
+           (1−dx)(1−dy)*I[y₀,x₀] + dx(1−dy)*I[y₀,x₀+1]
+           + (1−dx)dy*I[y₀+1,x₀] + dxdy*I[y₀+1,x₀+1]
 
-            x0, y0 = int(np.floor(xw)), int(np.floor(yw))
-            dx, dy = xw - x0, yw - y0
+  4. Store result in warped image.
 
-            if 0 <= x0 < im.shape[1]-1 and 0 <= y0 < im.shape[0]-1:
-                warped[y_out, x_out] = (
-                    (1-dx)*(1-dy)*im[y0, x0] +
-                    dx*(1-dy)*im[y0, x0+1] +
-                    (1-dx)*dy*im[y0+1, x0] +
-                    dx*dy*im[y0+1, x0+1]
-                )
-    return warped
-</code>
-  </pre>
+Output:
+  - Warped image aligned by H.
+</pre>
+
 
   <h3>Warped Images</h3>
   <img src="images/warp_nn.png" alt="Warped image using Nearest Neighbor">
