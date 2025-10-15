@@ -289,6 +289,119 @@ mosaic(x, y) = (α₁ * I₁(x, y) + α₂ * I₂(x, y)) / (α₁ + α₂)
 
 </section>
 
+<!-- =============================== -->
+<!-- ===       Part B Section     === -->
+<!-- =============================== -->
+
+<section id="B1">
+  <h2>B.1: Harris Corner Detection and ANMS</h2>
+  <p>
+    I first detected Harris corners on each image to identify strong local features.  
+    Then, I applied <strong>Adaptive Non-Maximal Suppression (ANMS)</strong> to obtain
+    a more spatially uniform set of interest points.
+  </p>
+  <img src="images/B1_harris_corners.jpg" alt="Harris corners detected">
+  <p class="caption">Detected Harris corners (red) overlaid on the grayscale image.</p>
+
+  <img src="images/B1_anms_corners.jpg" alt="ANMS corners selected">
+  <p class="caption">Corners after Adaptive Non-Maximal Suppression — uniformly distributed across the scene.</p>
+</section>
+
+<section id="B2">
+  <h2>B.2: Feature Descriptor Extraction</h2>
+  <p>
+    For each selected corner, I extracted a <strong>40×40 pixel patch</strong>, then
+    resized it to an <strong>8×8 descriptor</strong> after bias/gain normalization:
+  </p>
+  <pre><code>normalized = (patch - mean) / std</code></pre>
+  <p>
+    This ensures descriptors are illumination-invariant and comparable across images.
+  </p>
+
+  <img src="images/descriptors_patches.jpg" alt="40x40 patches">
+  <p class="caption">Example 40×40 patches around detected corners.</p>
+
+  <img src="images/descriptors_8x8.jpg" alt="8x8 descriptors">
+  <p class="caption">Corresponding 8×8 normalized descriptors used for feature matching.</p>
+</section>
+
+<section id="B3">
+  <h2>B.3: Feature Matching</h2>
+  <p>
+    Feature descriptors between two images were matched using the 
+    <strong>Lowe ratio test</strong>.  
+    A match was accepted if the ratio between the closest and second-closest 
+    descriptor distances was below 0.7.
+  </p>
+
+  <div class="mosaic-row">
+    <img src="images/matches_pair1.jpg" alt="Feature matches pair 1">
+    <img src="images/matches_pair2.jpg" alt="Feature matches pair 2">
+  </div>
+  <p class="caption">Example matched features visualized across image pairs.</p>
+</section>
+
+<section id="B4">
+  <h2>B.4: RANSAC for Robust Homography Estimation</h2>
+  <p>
+    Using the feature correspondences, I implemented a <strong>4-point RANSAC</strong> algorithm
+    to estimate a robust homography.  
+    Each iteration randomly selects 4 matches, computes a candidate homography,
+    and counts inliers based on reprojection error.
+  </p>
+
+  <pre><code>
+for iteration in range(num_iter):
+    sample = random 4 correspondences
+    H = compute_homography(sample)
+    inliers = matches[reprojection_error(H) < tol]
+    keep best H with max inliers
+  </code></pre>
+
+  <p>
+    The final homography was refined with all inliers, producing a stable and accurate transformation.
+  </p>
+
+  <p class="caption">Deliverables: Implement 4-point RANSAC from scratch, compare manual and automatic stitching, and produce ≥3 mosaics.</p>
+
+  <!-- Automatic Mosaics -->
+  <h3>Automatic Mosaic Examples</h3>
+
+  <div class="mosaic-row">
+    <img src="images/A.2.1.jpg" alt="Input A1">
+    <img src="images/A.2.2.jpg" alt="Input A2">
+    <img src="images/b4_mosaic_1.jpg" alt="Automatic Mosaic 1">
+  </div>
+  <p class="caption">Automatic mosaic from A.2 pair using RANSAC.</p>
+
+  <div class="mosaic-row">
+    <img src="images/test3.1.jpg" alt="Input T3.1">
+    <img src="images/test3.2.jpg" alt="Input T3.2">
+    <img src="images/b4_mosaic_2.jpg" alt="Automatic Mosaic 2">
+  </div>
+  <p class="caption">Automatic mosaic from test3 pair.</p>
+
+  <div class="mosaic-row">
+    <img src="images/test4.1.jpg" alt="Input T4.1">
+    <img src="images/test4.2.jpg" alt="Input T4.2">
+    <img src="images/b4_mosaic_3.jpg" alt="Automatic Mosaic 3">
+  </div>
+  <p class="caption">Automatic mosaic from test4 pair.</p>
+
+  <h3>Comparison: Manual vs Automatic</h3>
+  <div class="mosaic-row">
+    <img src="images/mosaic_result.jpg" alt="Manual mosaic">
+    <img src="images/b4_mosaic_1.jpg" alt="Automatic mosaic">
+  </div>
+  <p class="caption">Left: Manual stitch from Part A. Right: Automatic stitch (RANSAC + feature matching).</p>
+
+  <p>
+    The automatically stitched results are generally consistent with the manual mosaics.  
+    Minor misalignment near depth discontinuities occurs due to parallax, but planar regions
+    align well.  
+    This confirms the full automatic pipeline — from feature detection to RANSAC warping — works correctly.
+  </p>
+</section>
 
   </main>
 
