@@ -383,19 +383,66 @@ for iteration in range(num_iter):
   </div>
   <p class="caption">Automatic mosaic from test4 pair.</p>
 
-  <h3>Comparison: Manual vs Automatic</h3>
+  <h3>Automatic Mosaic Examples and Comparison</h3>
+
+  <!-- ========== Mosaic Pair 1 ========== -->
+  <h4>Example 1: A.2 Pair</h4>
   <div class="mosaic-row">
-    <img src="images/mosaic_result.jpg" alt="Manual mosaic">
-    <img src="images/b4_mosaic_1.jpg" alt="Automatic mosaic">
+    <img src="images/A.2.1.jpg" alt="Input A.2.1">
+    <img src="images/A.2.2.jpg" alt="Input A.2.2">
   </div>
-  <p class="caption">Left: Manual stitch from Part A. Right: Automatic stitch (RANSAC + feature matching).</p>
+  <p class="caption">Input image pair used for Example 1.</p>
+
+  <div class="mosaic-row">
+    <img src="images/mosaic_result.jpg" alt="Manual Mosaic 1">
+    <img src="images/b4_mosaic_1.jpg" alt="Automatic Mosaic 1">
+  </div>
+  <p class="caption">Left: Manual mosaic (Part A). Right: Automatic mosaic (Part B).</p>
+
+  <hr>
+
+  <!-- ========== Mosaic Pair 2 ========== -->
+  <h4>Example 2: test3 Pair</h4>
+  <div class="mosaic-row">
+    <img src="images/test3.1.jpg" alt="Input test3.1">
+    <img src="images/test3.2.jpg" alt="Input test3.2">
+  </div>
+  <p class="caption">Input image pair used for Example 2.</p>
+
+  <div class="mosaic-row">
+    <img src="images/mosaic_result3.jpg" alt="Manual Mosaic 2">
+    <img src="images/b4_mosaic_2.jpg" alt="Automatic Mosaic 2">
+  </div>
+  <p class="caption">Left: Manual mosaic (Part A). Right: Automatic mosaic (Part B).</p>
+
+  <hr>
+
+  <!-- ========== Mosaic Pair 3 ========== -->
+  <h4>Example 3: test4 Pair</h4>
+  <div class="mosaic-row">
+    <img src="images/test4.1.jpg" alt="Input test4.1">
+    <img src="images/test4.2.jpg" alt="Input test4.2">
+  </div>
+  <p class="caption">Input image pair used for Example 3.</p>
+
+  <div class="mosaic-row">
+    <img src="images/mosaic_result4.jpg" alt="Manual Mosaic 3">
+    <img src="images/b4_mosaic_3.jpg" alt="Automatic Mosaic 3">
+  </div>
+  <p class="caption">Left: Manual mosaic (Part A). Right: Automatic mosaic (Part B).</p>
+
+  <hr>
 
   <p>
-    The automatically stitched results are generally consistent with the manual mosaics.  
-    Minor misalignment near depth discontinuities occurs due to parallax, but planar regions
-    align well.  
-    This confirms the full automatic pipeline — from feature detection to RANSAC warping — works correctly.
+    Across all three examples, the <strong>automatic mosaics (right)</strong> are closely aligned
+    with the manually stitched results (left).  
+    Minor parallax artifacts appear in regions with large depth variation, but the planar
+    areas are well aligned.  
+    This demonstrates that the end-to-end pipeline — including Harris corner detection,
+    ANMS selection, feature descriptor extraction, feature matching, and 4-point RANSAC —
+    successfully produces robust homographies for image mosaicing.
   </p>
+
 </section>
 
   </main>
