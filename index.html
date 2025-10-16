@@ -300,10 +300,10 @@ mosaic(x, y) = (α₁ * I₁(x, y) + α₂ * I₂(x, y)) / (α₁ + α₂)
     Then, I applied <strong>Adaptive Non-Maximal Suppression (ANMS)</strong> to obtain
     a more spatially uniform set of interest points.
   </p>
-  <img src="images/B1_harris_corners.jpg" alt="Harris corners detected">
+  <img src="images/B1_harris_corners.png" alt="Harris corners detected">
   <p class="caption">Detected Harris corners (red) overlaid on the grayscale image.</p>
 
-  <img src="images/B1_anms_corners.jpg" alt="ANMS corners selected">
+  <img src="images/B1_anms_corners.png" alt="ANMS corners selected">
   <p class="caption">Corners after Adaptive Non-Maximal Suppression — uniformly distributed across the scene.</p>
 </section>
 
@@ -318,13 +318,9 @@ mosaic(x, y) = (α₁ * I₁(x, y) + α₂ * I₂(x, y)) / (α₁ + α₂)
     This ensures descriptors are illumination-invariant and comparable across images.
   </p>
 
-  <img src="images/descriptors_patches.jpg" alt="40x40 patches">
-  <p class="caption">Example 40×40 patches around detected corners.</p>
-
-  <img src="images/descriptors_8x8.jpg" alt="8x8 descriptors">
-  <p class="caption">Corresponding 8×8 normalized descriptors used for feature matching.</p>
-</section>
-
+  <img src="images/descriptors_patches.png" alt="40x40 patches">
+  <p class="caption">Example 40×40 patches around detected corners and Corresponding 8×8 normalized descriptors used for feature matching.</p>
+  
 <section id="B3">
   <h2>B.3: Feature Matching</h2>
   <p>
@@ -335,8 +331,7 @@ mosaic(x, y) = (α₁ * I₁(x, y) + α₂ * I₂(x, y)) / (α₁ + α₂)
   </p>
 
   <div class="mosaic-row">
-    <img src="images/matches_pair1.jpg" alt="Feature matches pair 1">
-    <img src="images/matches_pair2.jpg" alt="Feature matches pair 2">
+    <img src="images/matches_pairs.png" alt="Feature matching pairs">
   </div>
   <p class="caption">Example matched features visualized across image pairs.</p>
 </section>
