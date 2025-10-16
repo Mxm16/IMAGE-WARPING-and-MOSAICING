@@ -324,15 +324,31 @@ mosaic(x, y) = (α₁ * I₁(x, y) + α₂ * I₂(x, y)) / (α₁ + α₂)
 <section id="B3">
   <h2>B.3: Feature Matching</h2>
   <p>
-    Feature descriptors between two images were matched using the 
-    <strong>Lowe ratio test</strong>.  
-    A match was accepted if the ratio between the closest and second-closest 
-    descriptor distances was below 0.7.
+    After obtaining normalized 8×8 feature descriptors from both images,
+    I performed feature matching using the <strong>Lowe ratio test</strong>.
+    For each feature in the first image, the Euclidean distance was computed 
+    to all descriptors in the second image. The closest (<em>d₁</em>) and second-closest (<em>d₂</em>) matches were found, 
+    and a correspondence was accepted only if the ratio <code>d₁ / d₂ &lt; 0.75</code>. 
   </p>
 
-  <div class="mosaic-row">
-    <img src="images/matches_pairs.png" alt="Feature matching pairs">
-  </div>
+  <p>
+    This ratio test effectively removes ambiguous or noisy correspondences where multiple features 
+    in the second image are equally similar to the same feature in the first image. 
+    By setting the threshold to <strong>0.75</strong> instead of the more conservative <strong>0.7</strong>,
+    I allowed slightly more matches to pass through while maintaining good robustness. 
+    This choice was found empirically to produce a higher number of valid correspondences 
+    without noticeably increasing false matches, which is beneficial for subsequent RANSAC homography estimation.
+  </p>
+
+  <p>
+    The figure below shows the matched feature pairs between two images, visualized as connecting lines.
+    Despite viewpoint and lighting differences, most of the matches align well along consistent planar structures, 
+    demonstrating that the descriptor normalization and ratio-based filtering were effective.
+  </p>
+  <img src="images/matches_pairs.png" alt="Feature matching pairs">
+  <p class="caption">Example matched features visualized across image pairs.</p>
+
+    <img src="images/matches_pairs1.png" alt="Feature matching pairs">
   <p class="caption">Example matched features visualized across image pairs.</p>
 </section>
 
@@ -356,8 +372,6 @@ for iteration in range(num_iter):
   <p>
     The final homography was refined with all inliers, producing a stable and accurate transformation.
   </p>
-
-  <p class="caption">Deliverables: Implement 4-point RANSAC from scratch, compare manual and automatic stitching, and produce ≥3 mosaics.</p>
 
   <!-- Automatic Mosaics -->
   <h3>Automatic Mosaic Examples</h3>
