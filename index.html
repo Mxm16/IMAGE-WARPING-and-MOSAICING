@@ -296,10 +296,18 @@ mosaic(x, y) = (α₁ * I₁(x, y) + α₂ * I₂(x, y)) / (α₁ + α₂)
 <section id="B1">
   <h2>B.1: Harris Corner Detection and ANMS</h2>
   <p>
-    I first detected Harris corners on each image to identify strong local features.  
-    Then, I applied <strong>Adaptive Non-Maximal Suppression (ANMS)</strong> to obtain
-    a more spatially uniform set of interest points.
+    To locate distinctive and repeatable feature points, I first applied 
+    the <strong>Harris corner detector</strong> on each image to identify regions 
+    with strong local gradients in both directions. This step highlights areas 
+    such as corners or texture-rich points that are likely to be good matches across views.
   </p>
+  <p>
+    Since the Harris detector often produces many nearby detections in textured regions, 
+    I then used <strong>Adaptive Non-Maximal Suppression (ANMS)</strong> to select 
+    a spatially uniform subset of corners. ANMS retains points with high corner strength 
+    while ensuring an even spatial distribution, which improves matching stability later on.
+  </p>
+
   <img src="images/B1_harris_corners.png" alt="Harris corners detected">
   <p class="caption">Detected Harris corners (red) overlaid on the grayscale image.</p>
 
@@ -310,46 +318,42 @@ mosaic(x, y) = (α₁ * I₁(x, y) + α₂ * I₂(x, y)) / (α₁ + α₂)
 <section id="B2">
   <h2>B.2: Feature Descriptor Extraction</h2>
   <p>
-    For each selected corner, I extracted a <strong>40×40 pixel patch</strong>, then
-    resized it to an <strong>8×8 descriptor</strong> after bias/gain normalization:
+    Around each selected corner, I extracted a <strong>40×40 pixel patch</strong> 
+    from the grayscale image and resized it to an <strong>8×8 descriptor</strong> 
+    after applying bias and gain normalization:
   </p>
   <pre><code>normalized = (patch - mean) / std</code></pre>
   <p>
-    This ensures descriptors are illumination-invariant and comparable across images.
+    This normalization removes global lighting effects and contrast differences, 
+    making the descriptors more comparable across different images. 
+    Each descriptor is flattened into a 64-dimensional vector used for matching.
   </p>
 
   <img src="images/descriptors_patches.png" alt="40x40 patches">
-  <p class="caption">Example 40×40 patches around detected corners and Corresponding 8×8 normalized descriptors used for feature matching.</p>
-  
+  <p class="caption">Example 40×40 patches around detected corners and their corresponding 8×8 normalized descriptors.</p>
+</section>
+
 <section id="B3">
   <h2>B.3: Feature Matching</h2>
   <p>
-    After obtaining normalized 8×8 feature descriptors from both images,
-    I performed feature matching using the <strong>Lowe ratio test</strong>.
-    For each feature in the first image, the Euclidean distance was computed 
-    to all descriptors in the second image. The closest (<em>d₁</em>) and second-closest (<em>d₂</em>) matches were found, 
-    and a correspondence was accepted only if the ratio <code>d₁ / d₂ &lt; 0.75</code>. 
+    With the 8×8 descriptors from both images, I performed feature matching 
+    using the <strong>Lowe ratio test</strong>. For each descriptor in the first image, 
+    the two nearest descriptors in the second image were found based on Euclidean distance. 
+    A match was accepted if the ratio <code>d₁ / d₂ &lt; 0.75</code>.
   </p>
 
   <p>
-    This ratio test effectively removes ambiguous or noisy correspondences where multiple features 
-    in the second image are equally similar to the same feature in the first image. 
-    By setting the threshold to <strong>0.75</strong> instead of the more conservative <strong>0.7</strong>,
-    I allowed slightly more matches to pass through while maintaining good robustness. 
-    This choice was found empirically to produce a higher number of valid correspondences 
-    without noticeably increasing false matches, which is beneficial for subsequent RANSAC homography estimation.
+    The ratio test helps remove ambiguous correspondences and reduces false matches. 
+    A threshold of <strong>0.75</strong> provided a good balance — 
+    allowing enough matches for RANSAC while maintaining accuracy. 
+    The visualization below shows several examples of matched features.
   </p>
 
-  <p>
-    The figure below shows the matched feature pairs between two images, visualized as connecting lines.
-    Despite viewpoint and lighting differences, most of the matches align well along consistent planar structures, 
-    demonstrating that the descriptor normalization and ratio-based filtering were effective.
-  </p>
   <img src="images/matches_pairs.png" alt="Feature matching pairs">
-  <p class="caption">Example matched features visualized across image pairs.</p>
+  <p class="caption">Matched feature pairs between two images, visualized with connecting lines.</p>
 
-    <img src="images/matches_pairs1.png" alt="Feature matching pairs">
-  <p class="caption">Example matched features visualized across image pairs.</p>
+  <img src="images/matches_pairs1.png" alt="Feature matching pairs">
+  <p class="caption">Additional example of feature matching results on a different image pair.</p>
 </section>
 
 <section id="B4">
